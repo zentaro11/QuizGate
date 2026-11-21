@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>QuizGate</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d31;--panel2:#1d2942;--text:#f4f7fb;--muted:#aab6ca;--accent:#7c9cff;--good:#35c58b;--bad:#ff7272;--line:#2c3955}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#101a33,#090d18 55%);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+.wrap{max-width:820px;margin:auto;padding:24px 16px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+.brand{font-weight:850;font-size:27px;letter-spacing:-1px}.brand span{color:var(--accent)}.sub{color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab,button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:11px 15px;border-radius:12px;font-weight:650;cursor:pointer}
+.tab.active,button.primary{background:var(--accent);border-color:var(--accent);color:#081126}.tab:disabled,button:disabled{opacity:.45;cursor:not-allowed}
+.card{background:rgba(21,29,49,.96);border:1px solid var(--line);border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 12px 30px #0002}
+h1,h2,h3{margin:0 0 12px}h2{font-size:20px}.muted{color:var(--muted)}label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+input,textarea,select{width:100%;background:#0d1528;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit}
+textarea{min-height:76px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.statrow{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#0e172b;border-radius:13px;padding:14px}.stat b{display:block;font-size:24px}.question{padding:14px;background:#0e172b;border:1px solid var(--line);border-radius:13px;margin:10px 0}
+.option{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;margin:8px 0;background:#111b30}.option.selected{border-color:var(--accent);background:#233458}.option.correct{border-color:var(--good)}.option.wrong{border-color:var(--bad)}
+.small{font-size:12px}.hidden{display:none!important}.notice{padding:12px;border-radius:12px;background:#202e49;color:#dce7ff;margin:12px 0}.success{color:var(--good)}.danger{color:var(--bad)}.qhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pill{font-size:12px;color:var(--muted);background:#26334d;padding:5px 9px;border-radius:99px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.wrap{padding:18px 12px 40px}.card{padding:16px}.brand{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><div class="brand">Quiz<span>Gate</span></div><div class="sub">Learn first. Scroll later.</div></div>
+    <div class="pill" id="saveStatus">Saved on this device</div>
+  </header>
+  <div class="notice"><b>Prototype mode:</b> This version manages quizzes and your question bank. It does not yet block Instagram.</div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="home">Dashboard</button>
+    <button class="tab" data-tab="add">Add Question</button>
+    <button class="tab" data-tab="bank">Question Bank</button>
+    <button class="tab" data-tab="quiz">Start Quiz</button>
+  </nav>
+
+  <section id="home" class="panel">
+    <div class="card">
+      <h2>Your progress</h2>
+      <div class="statrow">
+        <div class="stat"><b id="totalCount">0</b><span class="muted small">Questions in bank</span></div>
+        <div class="stat"><b id="attemptCount">0</b><span class="muted small">Quiz attempts</span></div>
+      </div>
+      <div class="actions"><button class="primary" onclick="showTab('add')">＋ Add your first question</button><button onclick="showTab('quiz')">Start a quiz →</button></div>
+    </div>
+    <div class="card">
+      <h2>How it works</h2>
+      <p class="muted">1. Add your own multiple-choice questions.</p>
+      <p class="muted">2. Choose how many questions you want in each attempt.</p>
+      <p class="muted">3. QuizGate randomly selects questions and checks your answers.</p>
+      <p class="muted">4. Export a backup regularly so you never lose your question bank.</p>
+    </div>
+  </section>
+
+  <section id="add" class="panel hidden">
+    <div class="card">
+      <h2 id="formTitle">Add a question</h2>
+      <input type="hidden" id="editId">
+      <label for="questionText">Question</label><textarea id="questionText" placeholder="Write your question here..."></textarea>
+      <div class="grid">
+        <div><label>Option A</label><input id="opt0" placeholder="First answer"></div>
+        <div><label>Option B</label><input id="opt1" placeholder="Second answer"></div>
+        <div><label>Option C</label><input id="opt2" placeholder="Third answer"></div>
+        <div><label>Option D</label><input id="opt3" placeholder="Fourth answer"></div>
+      </div>
+      <label for="correct">Correct answer</label>
+      <select id="correct"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+      <label for="explanation">Explanation (optional)</label><textarea id="explanation" placeholder="Why is this the correct answer?"></textarea>
+      <div class="actions"><button class="primary" onclick="saveQuestion()">Save question</button><button onclick="clearForm()">Clear</button></div>
+      <p id="formMessage" class="small muted"></p>
+    </div>
+  </section>
+
+  <section id="bank" class="panel hidden">
+    <div class="card">
+      <div class="qhead"><div><h2>Question Bank</h2><div class="muted small" id="bankSubtitle">Your saved questions</div></div><button onclick="exportData()">Export backup</button></div>
+      <div class="actions"><label class="pill" style="cursor:pointer">Import backup <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importData(event)"></label></div>
+      <div id="questionList"></div>
+    </div>
+  </section>
+
+  <section id="quiz" class="panel hidden">
+    <div class="card" id="quizSetup">
+      <h2>Start a quiz</h2><p class="muted">Questions are selected randomly from your bank.</p>
+      <label for="questionCount">Number of questions</label>
+      <select id="questionCount"><option value="5">5 questions</option><option value="10">10 questions</option><option value="20">20 questions</option><option value="all">All questions</option></select>
+      <div class="actions"><button class="primary" id="startBtn" onclick="startQuiz()">Begin quiz</button></div>
+      <p class="small muted" id="quizHint"></p>
+    </div>
+    <div class="card hidden" id="quizRun">
+      <div class="qhead"><span class="pill" id="progress">Question 1</span><span class="pill" id="scoreLive">Score: 0</span></div>
+      <h2 id="liveQuestion" style="margin-top:16px"></h2>
+      <div id="liveOptions"></div>
+      <p id="answerFeedback" class="muted"></p>
+      <div class="actions"><button class="primary" id="nextBtn" disabled onclick="nextQuestion()">Next</button><button onclick="quitQuiz()">Quit quiz</button></div>
+    </div>
+    <div class="card hidden" id="quizResult">
+      <h2>Quiz complete</h2><div style="font-size:42px;font-weight:850" id="finalScore">0/0</div>
+      <p id="resultMessage" class="muted"></p><div class="actions"><button class="primary" onclick="resetQuiz()">Try again</button><button onclick="showTab('bank')">View question bank</button></div>
+    </div>
+  </section>
+  <footer class="sub" style="text-align:center;margin-top:28px">QuizGate · Your data stays in this browser unless you export it.</footer>
+</div>
+<script>
+const KEY='quizgate_questions_v1', STATS='quizgate_attempts_v1';
+let questions=loadQuestions(), attempts=Number(localStorage.getItem(STATS)||0), quizItems=[], quizIndex=0, score=0, selected=null, answered=false;
+function loadQuestions(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(questions));document.getElementById('saveStatus').textContent='Saved on this device';renderStats();renderBank()}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function showTab(tab){document.querySelectorAll('.panel').forEach(x=>x.classList.add('hidden'));document.getElementById(tab).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));if(tab==='bank')renderBank();if(tab==='quiz')updateQuizSetup();window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function renderStats(){document.getElementById('totalCount').textContent=questions.length;document.getElementById('attemptCount').textContent=attempts}
+function clearForm(){['editId','questionText','opt0','opt1','opt2','opt3','explanation'].forEach(id=>document.getElementById(id).value='');document.getElementById('correct').value='0';document.getElementById('formTitle').textContent='Add a question';document.getElementById('formMessage').textContent=''}
+function saveQuestion(){
+ const q=document.getElementById('questionText').value.trim(), opts=[0,1,2,3].map(i=>document.getElementById('opt'+i).value.trim()), correct=Number(document.getElementById('correct').value), explanation=document.getElementById('explanation').value.trim(), id=document.getElementById('editId').value;
+ if(!q||opts.some(x=>!x)){document.getElementById('formMessage').textContent='Please fill in the question and all four options.';return}
+ const item={id:id||uid(),q,opts,correct,explanation};
+ if(id){questions=questions.map(x=>x.id===id?item:x)}else{questions.push(item)}
+ persist();clearForm();document.getElementById('formMessage').textContent='Question saved successfully.'; 
+}
+function editQuestion(id){const x=questions.find(q=>q.id===id);if(!x)return;document.getElementById('editId').value=x.id;document.getElementById('questionText').value=x.q;x.opts.forEach((v,i)=>document.getElementById('opt'+i).value=v);document.getElementById('correct').value=String(x.correct);document.getElementById('explanation').value=x.explanation||'';document.getElementById('formTitle').textContent='Edit question';showTab('add')}
+function deleteQuestion(id){if(!confirm('Delete this question?'))return;questions=questions.filter(x=>x.id!==id);persist()}
+function renderBank(){const el=document.getElementById('questionList');document.getElementById('bankSubtitle').textContent=questions.length+' question(s) saved';if(!questions.length){el.innerHTML='<p class="muted">Your question bank is empty. Add your first question to get started.</p>';return}el.innerHTML=questions.map((x,i)=>`<div class="question"><div class="qhead"><b>${i+1}. ${esc(x.q)}</b><span class="pill">${'ABCD'[x.correct]} correct</span></div><p class="muted small">${x.opts.map((o,j)=>'('+('ABCD'[j])+') '+esc(o)).join(' · ')}</p><div class="actions"><button onclick="editQuestion('${x.id}')">Edit</button><button onclick="deleteQuestion('${x.id}')">Delete</button></div></div>`).join('')}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function updateQuizSetup(){const n=questions.length;document.getElementById('startBtn').disabled=n===0;document.getElementById('quizHint').textContent=n?`You have ${n} question(s) available.`:'Add questions to your bank before starting a quiz.';const sel=document.getElementById('questionCount');[...sel.options].forEach(o=>{if(o.value!=='all')o.disabled=Number(o.value)>n});if(n>0&&n<5)sel.value='all'}
+function startQuiz(){if(!questions.length)return;const n=document.getElementById('questionCount').value;const count=n==='all'?questions.length:Math.min(Number(n),questions.length);quizItems=[...questions].sort(()=>Math.random()-.5).slice(0,count);quizIndex=0;score=0;selected=null;answered=false;document.getElementById('quizSetup').classList.add('hidden');document.getElementById('quizResult').classList.add('hidden');document.getElementById('quizRun').classList.remove('hidden');renderCurrent()}
+function renderCurrent(){const q=quizItems[quizIndex];document.getElementById('progress').textContent=`Question ${quizIndex+1} of ${quizItems.length}`;document.getElementById('scoreLive').textContent=`Score: ${score}`;document.getElementById('liveQuestion').textContent=q.q;document.getElementById('answerFeedback').textContent='';document.getElementById('nextBtn').disabled=true;document.getElementById('nextBtn').textContent=quizIndex===quizItems.length-1?'See result':'Next';answered=false;selected=null;document.getElementById('liveOptions').innerHTML=q.opts.map((o,i)=>`<button class="option" id="option${i}" onclick="chooseAnswer(${i})"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+function chooseAnswer(i){if(answered)return;answered=true;selected=i;const q=quizItems[quizIndex],correct=i===q.correct;if(correct)score++;q.opts.forEach((_,j)=>{const b=document.getElementById('option'+j);b.disabled=true;if(j===q.correct)b.classList.add('correct');if(j===i&&!correct)b.classList.add('wrong')});const fb=document.getElementById('answerFeedback');fb.innerHTML=correct?'<span class="success">Correct!</span>':`<span class="danger">Incorrect.</span> Correct answer: ${'ABCD'[q.correct]}.`;if(q.explanation)fb.innerHTML+=' '+esc(q.explanation);document.getElementById('scoreLive').textContent=`Score: ${score}`;document.getElementById('nextBtn').disabled=false}
+function nextQuestion(){if(!answered)return;if(quizIndex<quizItems.length-1){quizIndex++;renderCurrent()}else finishQuiz()}
+function finishQuiz(){document.getElementById('quizRun').classList.add('hidden');document.getElementById('quizResult').classList.remove('hidden');document.getElementById('finalScore').textContent=`${score}/${quizItems.length}`;const pct=Math.round(score/quizItems.length*100);document.getElementById('resultMessage').textContent=`You scored ${pct}%. ${pct===100?'Perfect score!':pct>=70?'Good work. Keep it up!':'Review the questions and try again.'}`;attempts++;localStorage.setItem(STATS,String(attempts));renderStats()}
+function quitQuiz(){if(confirm('End this quiz? Your current attempt will not be saved.'))resetQuiz()}
+function resetQuiz(){document.getElementById('quizRun').classList.add('hidden');document.getElementById('quizResult').classList.add('hidden');document.getElementById('quizSetup').classList.remove('hidden');updateQuizSetup()}
+function exportData(){const blob=new Blob([JSON.stringify({app:'QuizGate',version:1,questions},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='quizgate-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result),arr=Array.isArray(d)?d:d.questions;if(!Array.isArray(arr)||arr.some(x=>!x.q||!Array.isArray(x.opts)||x.opts.length!==4||![0,1,2,3].includes(Number(x.correct))))throw Error();if(!confirm(`Import ${arr.length} questions? This will replace your current bank.`))return;questions=arr.map(x=>({...x,id:x.id||uid(),correct:Number(x.correct)}));persist();alert('Backup imported successfully.')}catch(err){alert('Invalid QuizGate backup file.')}e.target.value=''};r.readAsText(f)}
+renderStats();renderBank();updateQuizSetup();
+</script>
+</body>
+</html>
